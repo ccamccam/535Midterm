@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    docker.image('eclipse-temurin:17').inside {
+                    docker.image('maven:3.9.9-eclipse-temurin-17').inside {
                         sh 'mvn clean package'
                     }
                 }
@@ -26,7 +26,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    docker.image('eclipse-temurin:11').inside {
+                    docker.image('maven:3.9.9-eclipse-temurin-11').inside {
                         sh 'mvn test'
                     }
                 }
@@ -36,7 +36,7 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 script {
-                    docker.image('eclipse-temurin:8').inside {
+                    docker.image('maven:3.9.9-eclipse-temurin-8').inside {
                         sh "mvn sonar:sonar -Dsonar.host.url=${SONARQUBE_SERVER}"
                     }
                 }
