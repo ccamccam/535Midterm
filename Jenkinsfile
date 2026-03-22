@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     docker.image('maven:3.9-eclipse-temurin-17').inside {
-                        sh 'mvn clean package -DskipTests -Dmaven.test.failure.ignore=true'
+                        sh 'mvn clean package -DskipTests -Dspring-boot.run.skip=true'
                     }
                 }
             }
