@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'http://sonar:9000'
+        SONARQUBE_SERVER = 'http://172.18.0.3:9000'
         SONAR_PROJECT_KEY = 'java-app'
         DOCKER_IMAGE = 'ccamccam2/java-app:latest'
     }
