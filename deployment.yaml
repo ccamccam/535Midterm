@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: java-app
-          image: ccamccam/java-app:latest
+          image: ccamccam2/java-app:latest
           ports:
             - containerPort: 8080
 ---
