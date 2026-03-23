@@ -3,21 +3,32 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'http://sonar:9000'
-        DOCKER_IMAGE = 'ccamccam/java-app:latest'
+        SONAR_PROJECT_KEY = 'java-app'
+        DOCKER_IMAGE = 'ccamccam2/java-app:latest'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Pipeline Repo') {
             steps {
-                git branch: 'main', url:  'https://github.com/spring-guides/get-spring-boot.git'
+                checkout scm
+            }
+        }
+
+        stage('Checkout App') {
+            steps {
+                dir('app') {
+                    git branch: 'main', url: 'https://github.com/spring-guides/gs-spring-boot'
+                }
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    docker.image('maven:3.9-eclipse-temurin-17').inside {
-                        sh 'mvn clean package -DskipTests'
+                dir('app/complete') {
+                    script {
+                        docker.image('maven:3.9-eclipse-temurin-17').inside {
+                            sh './mvnw clean package -DskipTests'
+                        }
                     }
                 }
             }
@@ -25,9 +36,11 @@ pipeline {
 
         stage('Test') {
             steps {
-                script {
-                    docker.image('maven:3.9-eclipse-temurin-11').inside {
-                        sh 'mvn test'
+                dir('app/complete') {
+                    script {
+                        docker.image('maven:3.9-eclipse-temurin-17').inside {
+                            sh './mvnw test'
+                        }
                     }
                 }
             }
@@ -35,9 +48,17 @@ pipeline {
 
         stage('Static Code Analysis') {
             steps {
-                script {
-                    docker.image('maven:3.9-eclipse-temurin-8').inside {
-                        sh "mvn sonar:sonar -Dsonar.host.url=${SONARQUBE_SERVER}"
+                dir('app/complete') {
+                    script {
+                        docker.image('maven:3.9-eclipse-temurin-17').inside {
+                            sh """
+                            ./mvnw sonar:sonar \
+                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                              -Dsonar.host.url=${SONARQUBE_SERVER} \
+                              -Dsonar.login=admin \
+                              -Dsonar.password=Passadminword00
+                            """
+                        }
                     }
                 }
             }
@@ -45,8 +66,19 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                dir('app/complete') {
+                    script {
+                        sh '''
+                        cat > Dockerfile <<EOF
+                        FROM eclipse-temurin:17-jre
+                        WORKDIR /app
+                        COPY target/*.jar app.jar
+                        EXPOSE 8080
+                        ENTRYPOINT ["java","-jar","app.jar"]
+                        EOF
+                        '''
+                        sh "docker build -t ${DOCKER_IMAGE} ."
+                    }
                 }
             }
         }
@@ -54,8 +86,8 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    sh 'docker login -u ccamccam -p cyberBMPlockdown52'
-                    sh 'docker push ${DOCKER_IMAGE}'
+                    sh 'docker login -u ccamccam2 -p Password122'
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -63,7 +95,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh 'kubectl apply -f deployment.yaml'
+                    sh """
+                    sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml
+                    kubectl apply -f deployment.yaml
+                    """
                 }
             }
         }
