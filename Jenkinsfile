@@ -96,12 +96,10 @@ pipeline {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
                     sh """
-                    docker run --rm \
-                      -v "\$(pwd):/workspace" \
-                      -w /workspace \
+                    cat deployment.yaml | docker run --rm -i \
                       -v /var/jenkins_home/.kube:/root/.kube \
                       -v /var/jenkins_home/.minikube:/root/.minikube \
-                      bitnami/kubectl apply -f /workspace/deployment.yaml
+                      bitnami/kubectl apply -f -
                     """
                 }
             }
