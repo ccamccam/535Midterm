@@ -51,7 +51,7 @@ pipeline {
                 dir('app/complete') {
                     script {
                         sh 'until curl -sf http://172.18.0.3:9000 > /dev/null; do echo "Waiting for SonarQube..."; sleep 10; done'
-                        docker.image('maven:3.9-eclipse-temurin-17').inside {
+                        docker.image('maven:3.9-eclipse-temurin-17').inside('--network ci_network') {
                             sh """
                             ./mvnw sonar:sonar \
                               -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
