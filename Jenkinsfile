@@ -101,7 +101,7 @@ pipeline {
                       -v ~/.minikube:/root/.minikube \
                       -v \$PWD:/workspace \
                       bitnami/kubectl \
-                      kubectl apply -f /workspace/deployment.yaml
+                      apply -f /workspace/deployment.yaml
                     """
                 }
             }
