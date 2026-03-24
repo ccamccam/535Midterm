@@ -69,12 +69,13 @@ pipeline {
             steps {
                 dir('app/complete') {
                     script {
-                        writeFile file: 'Dockerfile', text: '''FROM eclipse-temurin:17-jre
-        WORKDIR /app
-        COPY target/*.jar app.jar
-        EXPOSE 8080
-        ENTRYPOINT ["java","-jar","app.jar"]
-        '''
+                        sh '''
+                        echo "FROM eclipse-temurin:17-jre" > Dockerfile
+                        echo "WORKDIR /app" >> Dockerfile
+                        echo "COPY target/*.jar app.jar" >> Dockerfile
+                        echo "EXPOSE 8080" >> Dockerfile
+                        echo 'ENTRYPOINT ["java","-jar","app.jar"]' >> Dockerfile
+                        '''
                         sh "docker build -t ${DOCKER_IMAGE} ."
                     }
                 }
