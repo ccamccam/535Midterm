@@ -95,7 +95,12 @@ pipeline {
                 script {
                     sh """
                     sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml
-                    /usr/bin/kubectl apply -f deployment.yaml
+                    docker run --rm \
+                      -v ~/.kube:/root/.kube \
+                      -v ~/.minikube:/root/.minikube \
+                      -v \$PWD:/workspace \
+                      bitnami/kubectl \
+                      kubectl apply -f /workspace/deployment.yaml
                     """
                 }
             }
