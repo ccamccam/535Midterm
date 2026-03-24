@@ -100,7 +100,10 @@ pipeline {
                       --network ci_network \
                       -v /var/jenkins_home/.kube:/root/.kube \
                       -v /var/jenkins_home/.minikube:/root/.minikube \
-                      bitnami/kubectl apply -f - --validate=false
+                      bitnami/kubectl apply -f - \
+                      --server=https://172.18.0.2:8443 \
+                      --insecure-skip-tls-verify=true \
+                      --validate=false
                     """
                 }
             }
