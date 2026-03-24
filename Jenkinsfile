@@ -94,18 +94,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh '''
-                    pwd
-                    ls -l
-                    sed -i 's|ccamccam2/java-app:latest|'"${DOCKER_IMAGE}"'|g' deployment.yaml
-                    docker run --rm \
-                      -v "$(pwd):/workspace" \
-                      -w /workspace \
-                      -v /var/jenkins_home/.kube:/root/.kube \
-                      -v /var/jenkins_home/.minikube:/root/.minikube \
-                      bitnami/kubectl \
-                      apply -f deployment.yaml
-                    '''
+                    sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
+                    docker.image('bitnami/kubectl').withRun("-v \$(pwd):/workspace -v /var/jenkins_home/.kube:/root/.kube -v /var/jenkins_home/.minikube:/root/.minikube") { c ->
+                        sh "docker exec \${c.id} kubectl apply -f /workspace/deployment.yaml"
                 }
             }
         }
