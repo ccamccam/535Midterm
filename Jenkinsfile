@@ -97,9 +97,10 @@ pipeline {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
                     sh """
                     cat deployment.yaml | docker run --rm -i \
+                      --network host \
                       -v /var/jenkins_home/.kube:/root/.kube \
                       -v /var/jenkins_home/.minikube:/root/.minikube \
-                      bitnami/kubectl apply -f -
+                      bitnami/kubectl apply -f - --validate=false
                     """
                 }
             }
