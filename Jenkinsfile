@@ -95,7 +95,7 @@ pipeline {
                 script {
                     sh """
                     sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml
-                    kubectl apply -f deployment.yaml
+                    /usr/bin/kubectl apply -f deployment.yaml
                     """
                 }
             }
