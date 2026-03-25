@@ -95,9 +95,12 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    docker.image('alpine:latest').withRun("--network ci_network") { c ->
+                    docker.image('alpine:latest').withRun("--network ci_network", "tail -f /dev/null") { c ->
                         sh """
-                        docker exec -u 0 ${c.id} sh -c 'apk add --no-cache curl && curl -LO "https://dl.k8s.io/release/\\\$(curl -L -s https://dl.k8s.io/release/stable.txt )/bin/linux/amd64/kubectl" && chmod +x kubectl && mv kubectl /usr/local/bin/'
+                        # Install kubectl
+                        docker exec -u 0 ${c.id} sh -c 'apk add --no-cache curl && curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl" && chmod +x kubectl && mv kubectl /usr/local/bin/'
+                        
+                        # Apply the configuration
                         docker exec -i ${c.id} sh -c 'cat > /tmp/kubeconfig && export KUBECONFIG=/tmp/kubeconfig && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < /var/jenkins_home/.kube/config
                         docker exec -i ${c.id} sh -c 'export KUBECONFIG=/tmp/kubeconfig && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < deployment.yaml
                         """
