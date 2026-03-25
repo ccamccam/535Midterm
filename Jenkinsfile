@@ -95,22 +95,9 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    sh """
-                    # Download kubectl
-                    curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
-                    chmod +x kubectl
-                    
-                    # Extract the token directly from the config file
-                    # This avoids all certificate path issues
-                    USER_TOKEN=\$(grep "token:" /var/jenkins_home/.kube/config | awk '{print \$2}' | head -n 1 )
-                    
-                    # Run apply using the token and the Gateway IP we just verified
-                    ./kubectl apply -f deployment.yaml \
-                      --server=https://172.18.0.1:8443 \
-                      --token="\$USER_TOKEN" \
-                      --insecure-skip-tls-verify=true \
-                      --validate=false
-                    """
+                    docker.image('bitnami/kubectl').inside("--entrypoint='' --network ci_network") {
+                        sh "kubectl apply -f deployment.yaml --server=https://172.18.0.1:8443 --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify=true --validate=false"
+                    }
                 }
             }
         }
