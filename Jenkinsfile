@@ -95,15 +95,8 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    sh """
-                    (cat /var/jenkins_home/.kube/config; echo "---"; cat deployment.yaml) | docker run --rm -i \
-                      --network ci_network \
-                      bitnami/kubectl apply -f - \
-                      --kubeconfig /dev/stdin \
-                      --server=https://172.18.0.2:8443 \
-                      --insecure-skip-tls-verify=true \
-                      --validate=false
-                    """
+                    sh "docker run --rm --network host -v /var/jenkins_home/.kube:/root/.kube -v /var/jenkins_home/.minikube:/root/.minikube bitnami/kubectl apply -f deployment.yaml --validate=false"
+
                 }
             }
         }
