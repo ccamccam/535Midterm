@@ -100,10 +100,20 @@ pipeline {
                     curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
                     chmod +x kubectl
                     
-                    # Run it directly using the host's config and the internal IP we found
+                    # Find the server URL from your config
+                    SERVER_URL=\$(grep server /var/jenkins_home/.kube/config | awk '{print \$2}' )
+                    echo "Detected Cluster URL: \$SERVER_URL"
+                    
+                    # If the URL is localhost, we need to use the internal IP instead
+                    if [[ "\$SERVER_URL" == *"localhost"* ]] || [[ "\$SERVER_URL" == *"127.0.0.1"* ]]; then
+                        # Try the standard internal IP for this lab environment
+                        SERVER_URL="https://172.18.0.2:8443"
+                    fi
+                    
+                    # Run the apply command using the detected config
                     ./kubectl apply -f deployment.yaml \
                       --kubeconfig /var/jenkins_home/.kube/config \
-                      --server=https://172.18.0.2:8443 \
+                      --server=\$SERVER_URL \
                       --insecure-skip-tls-verify=true \
                       --validate=false
                     """
