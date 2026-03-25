@@ -95,14 +95,17 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    docker.image('alpine:latest').withRun("--network ci_network", "tail -f /dev/null") { c ->
+                    def jenkinsId = sh(script: "docker ps -q --filter 'ancestor=jenkins/jenkins' | head -n 1", returnStdout: true).trim()
+                    if (!jenkinsId) { jenkinsId = "63df38ec29f6081f577d682a542325ca1d6b8589033eca11156c31bd8a1e2402" }
+
+                    // 3. Start Alpine and MOUNT EVERYTHING from Jenkins
+                    docker.image('alpine:latest').withRun("--network ci_network --volumes-from ${jenkinsId}", "tail -f /dev/null") { c ->
                         sh """
                         # Install kubectl
                         docker exec -u 0 ${c.id} sh -c 'apk add --no-cache curl && curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl" && chmod +x kubectl && mv kubectl /usr/local/bin/'
                         
-                        # Apply the configuration
-                        docker exec -i ${c.id} sh -c 'cat > /tmp/kubeconfig && export KUBECONFIG=/tmp/kubeconfig && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < /var/jenkins_home/.kube/config
-                        docker exec -i ${c.id} sh -c 'export KUBECONFIG=/tmp/kubeconfig && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < deployment.yaml
+                        # Apply the configuration using the config file that is now visible via --volumes-from
+                        docker exec -u 0 ${c.id} sh -c 'export KUBECONFIG=/var/jenkins_home/.kube/config && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < deployment.yaml
                         """
                     }
                 }
