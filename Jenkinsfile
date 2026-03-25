@@ -96,7 +96,6 @@ pipeline {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
                     sh "kubectl apply -f deployment.yaml --validate=false"
-                    }
                 }
             }
         }
