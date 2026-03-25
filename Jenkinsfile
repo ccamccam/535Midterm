@@ -95,7 +95,9 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    sh "kubectl apply -f deployment.yaml --validate=false"
+                    docker.image('bitnami/kubectl').withRun("--network ci_network") { c ->
+                        sh "cat /var/jenkins_home/.kube/config | docker exec -i ${c.id} bash -c 'cat > /tmp/kubeconfig && export KUBECONFIG=/tmp/kubeconfig && kubectl apply -f - --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false' < deployment.yaml"
+                    }
                 }
             }
         }
