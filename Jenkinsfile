@@ -100,20 +100,11 @@ pipeline {
                     curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
                     chmod +x kubectl
                     
-                    # Find the server URL from your config
-                    SERVER_URL=\$(grep server /var/jenkins_home/.kube/config | awk '{print \$2}' )
-                    echo "Detected Cluster URL: \$SERVER_URL"
-                    
-                    # If the URL is localhost, we need to use the internal IP instead
-                    if [[ "\$SERVER_URL" == *"localhost"* ]] || [[ "\$SERVER_URL" == *"127.0.0.1"* ]]; then
-                        # Try the standard internal IP for this lab environment
-                        SERVER_URL="https://172.18.0.2:8443"
-                    fi
-                    
-                    # Run the apply command using the detected config
+                    # Use the Gateway IP (172.18.0.1 ) to reach the host's Minikube
+                    # This replaces the 'host.docker.internal' which was failing
                     ./kubectl apply -f deployment.yaml \
                       --kubeconfig /var/jenkins_home/.kube/config \
-                      --server=\$SERVER_URL \
+                      --server=https://172.18.0.1:8443 \
                       --insecure-skip-tls-verify=true \
                       --validate=false
                     """
