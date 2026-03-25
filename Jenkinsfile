@@ -107,7 +107,6 @@ pipeline {
                       --insecure-skip-tls-verify=true \
                       --validate=false
                     """
-                    }
                 }
             }
         }
