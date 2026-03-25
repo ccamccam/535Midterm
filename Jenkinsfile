@@ -95,8 +95,7 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    docker.image('bitnami/kubectl').inside("--entrypoint='' --network ci_network -v /var/jenkins_home/.kube:/home/1000/.kube -v /var/jenkins_home/.minikube:/home/1000/.minikube") {
-                        sh "kubectl apply -f deployment.yaml --server=https://172.18.0.2:8443 --insecure-skip-tls-verify=true --validate=false"
+		    sh "kubectl apply -f deployment.yaml --validate=false"
                     }
                 }
             }
