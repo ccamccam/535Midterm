@@ -93,7 +93,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig([credentialsId: 'my-kubeconfig-id', serverUrl: 'https://172.18.0.1:8443'] ) {
+                withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://172.18.0.1:8443']) {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
                     sh "kubectl apply -f deployment.yaml --insecure-skip-tls-verify"
                 }
