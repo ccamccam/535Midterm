@@ -93,12 +93,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
-                    sh '''
-                    kubectl config current-context
-                    kubectl get nodes
-                    '''
-                }
+                kubernetesDeploy(configs: 'deployment.yaml', kubeconfigId: 'kubeconfig')
             }
         }
     }
