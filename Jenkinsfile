@@ -95,16 +95,7 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    sh """
-                    TOKEN=\$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-                    cat deployment.yaml | docker run --rm -i \
-                      --network ci_network \
-                      bitnami/kubectl apply -f - \
-                      --server=https://172.18.0.2:8443 \
-                      --token=\$TOKEN \
-                      --insecure-skip-tls-verify=true \
-                      --validate=false
-                    """
+                    sh "cat deployment.yaml | docker run --rm -i --network host bitnami/kubectl apply -f - --validate=false"
                 }
             }
         }
