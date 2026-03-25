@@ -96,15 +96,18 @@ pipeline {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
                     sh """
-                    # Download the binary
+                    # Download kubectl
                     curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
                     chmod +x kubectl
                     
-                    # Use the Gateway IP (172.18.0.1 ) to reach the host's Minikube
-                    # This replaces the 'host.docker.internal' which was failing
+                    # Extract the token directly from the config file
+                    # This avoids all certificate path issues
+                    USER_TOKEN=\$(grep "token:" /var/jenkins_home/.kube/config | awk '{print \$2}' | head -n 1 )
+                    
+                    # Run apply using the token and the Gateway IP we just verified
                     ./kubectl apply -f deployment.yaml \
-                      --kubeconfig /var/jenkins_home/.kube/config \
                       --server=https://172.18.0.1:8443 \
+                      --token="\$USER_TOKEN" \
                       --insecure-skip-tls-verify=true \
                       --validate=false
                     """
