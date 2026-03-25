@@ -95,7 +95,16 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    sh "cat deployment.yaml | docker run --rm -i --network host bitnami/kubectl apply -f - --validate=false"
+                    sh """
+                    cat deployment.yaml | docker run --rm -i \
+                      --network ci_network \
+                      -v /var/jenkins_home/.kube:/root/.kube \
+                      -v /var/jenkins_home/.minikube:/root/.minikube \
+                      bitnami/kubectl apply -f - \
+                      --server=https://kubernetes.default.svc.cluster.local:443 \
+                      --insecure-skip-tls-verify=true \
+                      --validate=false
+                    """
                 }
             }
         }
