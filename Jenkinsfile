@@ -95,8 +95,8 @@ pipeline {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
                     sh '''
+                    kubectl config current-context
                     kubectl get nodes
-                    kubectl apply -f deployment.yaml
                     '''
                 }
             }
