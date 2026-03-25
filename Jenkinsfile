@@ -95,17 +95,18 @@ pipeline {
             steps {
                 script {
                     sh "sed -i 's|ccamccam2/java-app:latest|${DOCKER_IMAGE}|g' deployment.yaml"
-                    def jenkinsId = "63df38ec29f6081f577d682a542325ca1d6b8589033eca11156c31bd8a1e2402"
-
-                    // 3. Start Alpine using the HOST network to reach the cluster
-                    docker.image('alpine:latest').withRun("--network host --volumes-from ${jenkinsId}", "tail -f /dev/null") { c ->
-                        sh """
-                        # Install kubectl
-                        docker exec -u 0 ${c.id} sh -c 'apk add --no-cache curl && curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl" && chmod +x kubectl && mv kubectl /usr/local/bin/'
-                        
-                        # Apply the configuration using the host's localhost address (standard for Minikube on host )
-                        cat deployment.yaml | docker exec -i ${c.id} sh -c 'export KUBECONFIG=/var/jenkins_home/.kube/config && kubectl apply -f - --server=https://127.0.0.1:8443 --insecure-skip-tls-verify=true --validate=false'
-                        """
+                    sh """
+                    # Download the binary
+                    curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+                    chmod +x kubectl
+                    
+                    # Run it directly using the host's config and the internal IP we found
+                    ./kubectl apply -f deployment.yaml \
+                      --kubeconfig /var/jenkins_home/.kube/config \
+                      --server=https://172.18.0.2:8443 \
+                      --insecure-skip-tls-verify=true \
+                      --validate=false
+                    """
                     }
                 }
             }
