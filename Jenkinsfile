@@ -38,10 +38,10 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis (Java 8)') {
+        stage('SonarQube Analysis (Java 11)') {
             agent {
                 docker {
-                    image 'maven:3.9.9-eclipse-temurin-8'
+                    image 'maven:3.9.9-eclipse-temurin-11'
                     args '-v $HOME/.m2:/root/.m2'
                 }
             }
