@@ -22,7 +22,8 @@ pipeline {
                 }
             }
             steps {
-                sh 'mvn clean package'
+                sh 'mvn clean package -DskipTests'
+                stash includes: 'target/*.jar', name: 'app-jar'
             }
         }
 
@@ -58,6 +59,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                unstash 'app-jar'
+                sh 'ls -l target'
                 sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
