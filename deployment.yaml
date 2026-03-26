@@ -15,6 +15,7 @@ spec:
       containers:
       - name: java-app
         image: ccamccam2/java-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
 ---
