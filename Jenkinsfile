@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'ccamccam2/java-app:latest'
-        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_HOST_URL = 'http://172.17.0.1:9000'
     }
 
     stages {
@@ -49,7 +49,7 @@ pipeline {
                 sh '''
                 mvn sonar:sonar \
                   -Dsonar.projectKey=java-app \
-                  -Dsonar.host.url=http://localhost:9000 \
+                  -Dsonar.host.url=http://172.17.0.1:9000 \
                   -Dsonar.login=admin \
                   -Dsonar.password=admin1
                 '''
